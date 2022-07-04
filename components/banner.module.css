@@ -1,6 +1,8 @@
 /** By default, this is a mobile breakpoint **/
 .container {
   margin-bottom: 1rem;
+  position: relative;
+  z-index: 2;
 }
 
 .title {
@@ -31,6 +33,7 @@
 
 .buttonWrapper {
   margin-top: 1.25rem;
+  z-index: 10;
 }
 
 .button {
