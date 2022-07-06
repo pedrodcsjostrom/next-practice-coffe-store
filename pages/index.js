@@ -4,7 +4,23 @@ import Banner from "../components/banner";
 import Card from "../components/card";
 import styles from "../styles/Home.module.css";
 
-export default function Home() {
+import coffeStoresData from "../data/coffee-stores.json";
+import { fetchCoffeStores } from "../lib/coffe-stores";
+
+export async function getStaticProps(staticProps) {
+
+  const data = await fetchCoffeStores();
+
+  return {
+    props: {
+      coffeStores: data.results,
+    },
+  };
+}
+
+
+
+export default function Home({ coffeStores }) {
   const handleOnBannerBtnClick = (e) => {
     console.log("Hi banner button");
   };
@@ -29,14 +45,24 @@ export default function Home() {
             height={400}
           />
         </div>
-        <div className={styles.cardLayout}>
-          <Card
-            name="DarkHorse Coffee"
-            href={"/coffee-store/darkhorse-coffee"}
-            imgUrl="/static/hero-image.png"
-            className={styles.card}
-          />
-        </div>
+        {coffeStores.length > 0 && (
+          <>
+            <h2 className={styles.heading2}>Toronto Stores</h2>
+            <div className={styles.cardLayout}>
+              {coffeStores.map((item) => {
+                return (
+                  <Card
+                    name={item.name}
+                    href={`/coffee-store/${item.fsq_id}`}
+                    imgUrl={item.categories[0].icon.prefix + item.categories[0].icon.suffix}
+                    className={styles.card}
+                    key={item.fsq_id}
+                  />
+                );
+              })}
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
