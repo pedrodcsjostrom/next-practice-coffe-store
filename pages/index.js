@@ -4,25 +4,26 @@ import Banner from "../components/banner";
 import Card from "../components/card";
 import styles from "../styles/Home.module.css";
 
-import coffeStoresData from "../data/coffee-stores.json";
 import { fetchCoffeStores } from "../lib/coffe-stores";
+import useTrackLocation from "../hooks/useTrackLocation";
 
 export async function getStaticProps(staticProps) {
-
-  const data = await fetchCoffeStores();
+  const coffeStores = await fetchCoffeStores();
 
   return {
     props: {
-      coffeStores: data.results,
+      coffeStores,
     },
   };
 }
 
-
-
 export default function Home({ coffeStores }) {
+  const { latLong, locationErrorMsg, handleTrackLocation, status } = useTrackLocation();
+
+  console.log({ latLong, locationErrorMsg });
+
   const handleOnBannerBtnClick = (e) => {
-    console.log("Hi banner button");
+    handleTrackLocation();
   };
   return (
     <div className={styles.container}>
@@ -34,7 +35,7 @@ export default function Home({ coffeStores }) {
 
       <main className={styles.main}>
         <Banner
-          buttonText={"View stories nearby"}
+          buttonText={status? "Locating...": "View stories nearby"}
           handleOnClick={handleOnBannerBtnClick}
         />
         <div className={styles.heroImage}>
@@ -47,14 +48,14 @@ export default function Home({ coffeStores }) {
         </div>
         {coffeStores.length > 0 && (
           <>
-            <h2 className={styles.heading2}>Toronto Stores</h2>
+            <h2 className={styles.heading2}>Portugal and 6 de Dic</h2>
             <div className={styles.cardLayout}>
               {coffeStores.map((item) => {
                 return (
                   <Card
                     name={item.name}
                     href={`/coffee-store/${item.fsq_id}`}
-                    imgUrl={item.categories[0].icon.prefix + item.categories[0].icon.suffix}
+                    imgUrl={item.imgUrl}
                     className={styles.card}
                     key={item.fsq_id}
                   />

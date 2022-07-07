@@ -1,20 +1,51 @@
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import Image from "next/image";
+
 import cls from "classnames";
 
 import styles from "../../styles/coffee-store.module.css";
 
 import coffeStoreData from "../../data/coffee-stores.json";
-import Image from "next/image";
+import { fetchCoffeStores } from "../../lib/coffe-stores";
+
+export async function getStaticProps(staticProps) {
+  // console.log(staticProps);
+  const params = staticProps.params;
+  const coffeStores = await fetchCoffeStores();
+
+  return {
+    props: {
+      coffeStore: coffeStores.find((coffeStore) => {
+        return coffeStore.fsq_id.toString() === params.id; // dynamic id
+      }),
+    },
+  };
+}
+
+export async function getStaticPaths() {
+  const coffeStores = await fetchCoffeStores();
+
+  const paths = coffeStores.map((coffeStore) => {
+    return {
+      params: { id: coffeStore.fsq_id.toString() },
+    };
+  });
+
+  return {
+    paths,
+    fallback: true,
+  };
+}
 
 export default function CoffeStore({ coffeStore }) {
-  // console.log("props", props)
+  console.log("props", coffeStore)
   const router = useRouter();
   if (router.isFallback) {
     return <div>Loading...</div>;
   }
-  const { name, address, neighbourhood, imgUrl } = coffeStore;
+  const { name, location, imgUrl } = coffeStore;
 
   const handleUpvoteButton = () => {
     console.log("upvote");
@@ -28,14 +59,14 @@ export default function CoffeStore({ coffeStore }) {
         <div className={styles.col1}>
           <div className={styles.backToHomeLink}>
             <Link href="/">
-              <a>Home</a>
+              <a> ← Home</a>
             </Link>
           </div>
           <div className={styles.nameWrapper}>
             <h1 className={styles.name}>{name}</h1>
           </div>
           <Image
-            src={imgUrl}
+            src={imgUrl || coffeStoreData[0].imgUrl}
             width={600}
             height={360}
             className={styles.storeImg}
@@ -50,7 +81,7 @@ export default function CoffeStore({ coffeStore }) {
               height={24}
               alt={name}
             />
-            <p className={styles.text}>{address}</p>
+            <p className={styles.text}>{location.formatted_address}</p>
           </div>
           <div className={styles.iconWrapper}>
             <Image
@@ -59,7 +90,7 @@ export default function CoffeStore({ coffeStore }) {
               height={24}
               alt={name}
             />
-            <p className={styles.text}>{neighbourhood}</p>
+            <p className={styles.text}>{location.locality}</p>
           </div>
           <div className={styles.iconWrapper}>
             <Image
@@ -79,27 +110,4 @@ export default function CoffeStore({ coffeStore }) {
   );
 }
 
-export function getStaticProps(staticProps) {
-  console.log(staticProps);
-  const params = staticProps.params;
 
-  return {
-    props: {
-      coffeStore: coffeStoreData.find((coffeStore) => {
-        return coffeStore.id.toString() === params.id; // dynamic id
-      }),
-    },
-  };
-}
-
-export function getStaticPaths() {
-  const paths = coffeStoreData.map((coffeStore) => {
-    return {
-      params: { id: coffeStore.id.toString() },
-    };
-  });
-  return {
-    paths,
-    fallback: true,
-  };
-}
